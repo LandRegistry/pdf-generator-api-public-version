@@ -1,0 +1,82 @@
+plugins {
+    // Apply the java plugin to add support for Java
+    id 'java'
+    // Build an application
+    id 'application'
+    // Code coverage tool
+    id 'jacoco'
+    // Shadow plugin for fatjar creation. Note that 1.2.3 or later is needed for gradle > 2.1.2
+    id 'com.github.johnrengelman.shadow' version '1.2.4'
+}
+
+jar {
+    baseName = 'pdf-generator-api'
+}
+
+// Application class with the main method
+mainClassName = 'pdfgeneratorapi.Main'
+
+// In this section you declare where to find the dependencies of your project
+repositories {
+    // http://stackoverflow.com/questions/24852219/android-buildscript-repositories-jcenter-vs-mavencentral
+    jcenter()
+}
+
+// Ensure the jar name is nice and simple
+shadowJar{
+    archiveName = "pdf-generator-api.${extension}"
+}
+
+// Force source (and therefore target) compatibility to Java 8, rather than whatever JVM happens to be installed on the build machine
+sourceCompatibility = 1.8
+
+// In this section you declare the dependencies for your production and test code
+dependencies {
+    // SLF4J logging API and Logback implementation
+    compile 'org.slf4j:slf4j-api:1.7.25'
+    compile 'ch.qos.logback:logback-core:1.2.3'
+    compile 'ch.qos.logback:logback-classic:1.2.3'
+    // This provides the ability to log in JSON format
+    compile 'net.logstash.logback:logstash-logback-encoder:4.9'
+    
+    // Tests
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.hamcrest:java-hamcrest:2.0.0.0'
+    testCompile "org.easymock:easymock:3.4"
+    testCompile "org.powermock:powermock-module-junit4:1.6.5"
+    testCompile "org.powermock:powermock-api-easymock:1.6.5"
+    
+    // Spark framework
+    compile 'com.sparkjava:spark-core:2.6.0'
+
+    // Unirest for REST
+    compile 'com.mashape.unirest:unirest-java:1.4.9'       
+
+    // Gson for json creation (for multimegabyte json, might want to consider Jackson)
+    compile 'com.google.code.gson:gson:2.8.1'
+    compile 'com.googlecode.json-simple:json-simple:1.1'
+
+    // https://mvnrepository.com/artifact/commons-io/commons-io
+    compile group: 'commons-io', name: 'commons-io', version: '2.5'
+
+    // iText
+    compile 'com.itextpdf:io:7.0.2'
+    compile 'com.itextpdf:kernel:7.0.2'
+    compile 'com.itextpdf:layout:7.0.2'
+    compile 'com.itextpdf:pdfa:7.0.2'
+
+    // Add jars in libs folder
+    compile fileTree(dir: 'libs', include: '*.jar')
+}
+
+// We only want coverage for our non-boilerplate code
+jacocoTestReport {
+    afterEvaluate {
+        classDirectories = files(classDirectories.files.collect {
+            fileTree(dir: it, includes: ['pdfgeneratorapi/views/logic/**', 'pdfgeneratorapi/dependencies/**'])
+        })
+    }
+}
+
+sourceSets.main.resources.srcDirs = [ "src/main/resources" ]
+sourceSets.main.resources.includes = [ "*.png",  "*.icm", "*.ttf", "*.xml"]

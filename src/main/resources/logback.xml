@@ -1,0 +1,31 @@
+<configuration>
+  <!-- This appender is for all log entries -->
+  <appender name="app" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+     <!-- Here we rename fields and make sure order/format match our required standard -->
+      <providers>
+        <timestamp>
+          <fieldName>timestamp</fieldName>
+          <!-- If the timestamp is not this exact format then elasticsearch blows up due to clash with other systems -->
+          <pattern>yyyy-MM-dd HH:mm:ss,SSS</pattern>
+        </timestamp>
+        <logLevel/>
+        <mdc>
+          <includeMdcKeyName>traceid</includeMdcKeyName>
+        </mdc>
+        <message/>
+        <stackTrace>
+          <fieldName>exception</fieldName>
+        </stackTrace>
+      </providers>
+    </encoder>
+  </appender>
+
+  <!-- Switch jetty and hikari classes to >= info level messages only because they're total spammers -->
+  <logger name="org.eclipse.jetty" level="info" />
+  <logger name="com.zaxxer.hikari.pool.HikariPool" level="info" />
+
+  <root level="${LOG_LEVEL}">
+    <appender-ref ref="app" />
+  </root>
+</configuration>
